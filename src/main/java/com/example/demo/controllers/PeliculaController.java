@@ -1,9 +1,12 @@
 package com.example.demo.controllers;
 
 import com.example.demo.models.Pelicula;
+import com.example.demo.models.User;
 import com.example.demo.repository.PeliculaRepository;
+import com.example.demo.repository.UserRepository;
 import com.example.demo.service.CloudinaryService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,10 +20,25 @@ public class PeliculaController {
 
     private final PeliculaRepository peliculaRepository;
     private final CloudinaryService cloudinaryService;
+    private final UserRepository userRepository;
 
-    public PeliculaController(PeliculaRepository peliculaRepository, CloudinaryService cloudinaryService) {
+    public PeliculaController(PeliculaRepository peliculaRepository,
+                              CloudinaryService cloudinaryService,
+                              UserRepository userRepository) {
         this.peliculaRepository = peliculaRepository;
         this.cloudinaryService = cloudinaryService;
+        this.userRepository = userRepository;
+    }
+
+    private User obtenerUsuarioAutenticado(Authentication authentication) {
+        String username = authentication.getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+    }
+
+    private boolean esAdmin(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
 
     @PostMapping(consumes = {"multipart/form-data"})
@@ -29,9 +47,11 @@ public class PeliculaController {
             @RequestParam("genero") String genero,
             @RequestParam("calificacion") Double calificacion,
             @RequestParam("vista") boolean vista,
-            @RequestParam("imagen") MultipartFile imagen
+            @RequestParam("imagen") MultipartFile imagen,
+            Authentication authentication
     ) {
         try {
+            User user = obtenerUsuarioAutenticado(authentication);
             String imageUrl = cloudinaryService.subirImagen(imagen);
 
             Pelicula pelicula = new Pelicula();
@@ -40,6 +60,7 @@ public class PeliculaController {
             pelicula.setCalificacion(calificacion);
             pelicula.setVista(vista);
             pelicula.setPortada(imageUrl);
+            pelicula.setUser(user);
 
             return ResponseEntity.ok(peliculaRepository.save(pelicula));
         } catch (Exception e) {
@@ -48,8 +69,14 @@ public class PeliculaController {
     }
 
     @GetMapping
-    public List<Pelicula> listarPeliculas() {
-        return peliculaRepository.findAll();
+    public List<Pelicula> listarPeliculas(Authentication authentication) {
+        User user = obtenerUsuarioAutenticado(authentication);
+
+        if (esAdmin(authentication)) {
+            return peliculaRepository.findAll();
+        }
+
+        return peliculaRepository.findByUser(user);
     }
 
     @PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
@@ -59,13 +86,21 @@ public class PeliculaController {
             @RequestParam("genero") String genero,
             @RequestParam("calificacion") Double calificacion,
             @RequestParam("vista") boolean vista,
-            @RequestParam(value = "imagen", required = false) MultipartFile imagen
+            @RequestParam(value = "imagen", required = false) MultipartFile imagen,
+            Authentication authentication
     ) {
         try {
-            Optional<Pelicula> peliculaOptional = peliculaRepository.findById(id);
+            User user = obtenerUsuarioAutenticado(authentication);
+
+            Optional<Pelicula> peliculaOptional;
+            if (esAdmin(authentication)) {
+                peliculaOptional = peliculaRepository.findById(id);
+            } else {
+                peliculaOptional = peliculaRepository.findByIdAndUser(id, user);
+            }
 
             if (peliculaOptional.isEmpty()) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(404).body("Película no encontrada o no te pertenece");
             }
 
             Pelicula pelicula = peliculaOptional.get();
@@ -86,31 +121,63 @@ public class PeliculaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarPelicula(@PathVariable Long id) {
-        if (!peliculaRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<?> eliminarPelicula(@PathVariable Long id, Authentication authentication) {
+        User user = obtenerUsuarioAutenticado(authentication);
+
+        Optional<Pelicula> peliculaOptional;
+        if (esAdmin(authentication)) {
+            peliculaOptional = peliculaRepository.findById(id);
+        } else {
+            peliculaOptional = peliculaRepository.findByIdAndUser(id, user);
         }
 
-        peliculaRepository.deleteById(id);
+        if (peliculaOptional.isEmpty()) {
+            return ResponseEntity.status(404).body("Película no encontrada o no te pertenece");
+        }
+
+        peliculaRepository.delete(peliculaOptional.get());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/buscar")
-    public List<Pelicula> buscarPorNombre(@RequestParam String nombre) {
-        return peliculaRepository.findByNombreContainingIgnoreCase(nombre);
+    public List<Pelicula> buscarPorNombre(@RequestParam String nombre, Authentication authentication) {
+        User user = obtenerUsuarioAutenticado(authentication);
+
+        if (esAdmin(authentication)) {
+            return peliculaRepository.findByNombreContainingIgnoreCase(nombre);
+        }
+
+        return peliculaRepository.findByUserAndNombreContainingIgnoreCase(user, nombre);
     }
 
     @GetMapping("/filtrar")
-    public List<Pelicula> filtrarPorVista(@RequestParam boolean vista) {
-        return peliculaRepository.findByVista(vista);
+    public List<Pelicula> filtrarPorVista(@RequestParam boolean vista, Authentication authentication) {
+        User user = obtenerUsuarioAutenticado(authentication);
+
+        if (esAdmin(authentication)) {
+            return peliculaRepository.findByVista(vista);
+        }
+
+        return peliculaRepository.findByUserAndVista(user, vista);
     }
 
     @PatchMapping("/{id}/vista")
-    public ResponseEntity<Pelicula> cambiarEstadoVista(@PathVariable Long id, @RequestParam boolean vista) {
-        Optional<Pelicula> peliculaOptional = peliculaRepository.findById(id);
+    public ResponseEntity<?> cambiarEstadoVista(
+            @PathVariable Long id,
+            @RequestParam boolean vista,
+            Authentication authentication
+    ) {
+        User user = obtenerUsuarioAutenticado(authentication);
+
+        Optional<Pelicula> peliculaOptional;
+        if (esAdmin(authentication)) {
+            peliculaOptional = peliculaRepository.findById(id);
+        } else {
+            peliculaOptional = peliculaRepository.findByIdAndUser(id, user);
+        }
 
         if (peliculaOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).body("Película no encontrada o no te pertenece");
         }
 
         Pelicula pelicula = peliculaOptional.get();

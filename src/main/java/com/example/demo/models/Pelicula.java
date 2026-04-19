@@ -1,5 +1,6 @@
 package com.example.demo.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -16,16 +17,22 @@ public class Pelicula {
     private Double calificacion;
     private Boolean vista;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
+    private User user;
+
     public Pelicula() {
     }
 
-    public Pelicula(Long id, String nombre, String portada, String genero, Double calificacion, Boolean vista) {
+    public Pelicula(Long id, String nombre, String portada, String genero, Double calificacion, Boolean vista, User user) {
         this.id = id;
         this.nombre = nombre;
         this.portada = portada;
         this.genero = genero;
         this.calificacion = calificacion;
         this.vista = vista;
+        this.user = user;
     }
 
     public Long getId() {
@@ -74,5 +81,13 @@ public class Pelicula {
 
     public void setVista(Boolean vista) {
         this.vista = vista;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
