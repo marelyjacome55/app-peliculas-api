@@ -17,6 +17,9 @@ public class Pelicula {
     private Double calificacion;
     private Boolean vista;
 
+    @Column(name = "comentario_personal", length = 1000)
+    private String comentarioPersonal;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @JsonIgnore
@@ -25,13 +28,14 @@ public class Pelicula {
     public Pelicula() {
     }
 
-    public Pelicula(Long id, String nombre, String portada, String genero, Double calificacion, Boolean vista, User user) {
+    public Pelicula(Long id, String nombre, String portada, String genero, Double calificacion, Boolean vista, String comentarioPersonal, User user) {
         this.id = id;
         this.nombre = nombre;
         this.portada = portada;
         this.genero = genero;
         this.calificacion = calificacion;
         this.vista = vista;
+        this.comentarioPersonal = comentarioPersonal;
         this.user = user;
     }
 
@@ -81,6 +85,14 @@ public class Pelicula {
 
     public void setVista(Boolean vista) {
         this.vista = vista;
+    }
+
+    public String getComentarioPersonal() {
+        return comentarioPersonal;
+    }
+
+    public void setComentarioPersonal(String comentarioPersonal) {
+        this.comentarioPersonal = comentarioPersonal;
     }
 
     public User getUser() {
