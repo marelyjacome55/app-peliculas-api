@@ -1,5 +1,8 @@
 package com.example.demo.payload.response;
 
+// PATRÓN DTO - DATA TRANSFER OBJECT:
+// Devuelve al frontend la respuesta de autenticación con el token JWT y datos del usuario.
+// Evita exponer directamente la entidad Usuario a través de la API.
 import java.util.List;
 
 public class JwtResponse {

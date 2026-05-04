@@ -1,5 +1,8 @@
 package com.example.demo.controllers;
 
+// PATRÓN MVC - CONTROLLER:
+// Recibe las solicitudes HTTP del frontend y delega la lógica de autenticación al servicio.
+// Evita que el frontend se comunique directamente con la base de datos.
 import com.example.demo.models.ERole;
 import com.example.demo.models.Role;
 import com.example.demo.models.User;

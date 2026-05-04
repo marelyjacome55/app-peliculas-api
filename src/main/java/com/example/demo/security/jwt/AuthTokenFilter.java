@@ -1,5 +1,8 @@
 package com.example.demo.security.jwt;
 
+// PATRÓN / COMPONENTE: SECURITY FILTER:
+// Intercepta las solicitudes HTTP para validar el token JWT antes de que accedan a los endpoints protegidos.
+// Si el token es válido, autenticará al usuario en el contexto de seguridad de Spring.
 import com.example.demo.security.services.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

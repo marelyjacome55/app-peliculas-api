@@ -1,8 +1,8 @@
 package com.example.demo.payload.request;
 
-// PATRÓN DTO:
-// Este objeto recibe desde el frontend el comentario personal de una película.
-// Se usa para no modificar directamente la entidad Pelicula desde el controlador.
+// PATRÓN DTO - DATA TRANSFER OBJECT:
+// Recibe desde el frontend el comentario personal de una película.
+// Evita modificar directamente la entidad Pelicula exponiendo solo el cambio necesario.
 public class ComentarioPersonalRequest {
 
     private String comentarioPersonal;
