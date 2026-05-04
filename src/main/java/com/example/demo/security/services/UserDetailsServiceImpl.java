@@ -1,5 +1,8 @@
 package com.example.demo.security.services;
 
+// PATRÓN SERVICE LAYER:
+// Implementa la lógica de carga de detalles del usuario para el proceso de autenticación.
+// Spring Security utiliza este servicio para validar credenciales y cargar autoridades.
 import com.example.demo.models.User;
 import com.example.demo.repository.UserRepository;
 import jakarta.transaction.Transactional;

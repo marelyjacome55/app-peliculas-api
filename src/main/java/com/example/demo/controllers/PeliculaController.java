@@ -1,5 +1,8 @@
 package com.example.demo.controllers;
 
+// PATRÓN MVC - CONTROLLER:
+// Recibe las solicitudes HTTP del frontend para gestionar películas.
+// Delega la lógica de negocio al servicio y repositorio correspondiente.
 import com.example.demo.models.Pelicula;
 import com.example.demo.models.User;
 import com.example.demo.repository.PeliculaRepository;

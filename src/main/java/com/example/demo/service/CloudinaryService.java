@@ -1,5 +1,8 @@
 package com.example.demo.service;
 
+// PATRÓN SERVICE LAYER:
+// Concentra la lógica de negocio para gestionar la carga de imágenes en Cloudinary.
+// Centraliza la comunicación con el servicio externo, facilitando mantenimiento y testing.
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import org.springframework.stereotype.Service;

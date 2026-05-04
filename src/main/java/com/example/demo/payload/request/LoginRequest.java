@@ -1,5 +1,8 @@
 package com.example.demo.payload.request;
 
+// PATRÓN DTO - DATA TRANSFER OBJECT:
+// Transporta las credenciales del usuario desde el frontend.
+// Valida que usuario y contraseña no estén vacíos antes de procesarse.
 import jakarta.validation.constraints.NotBlank;
 
 public class LoginRequest {

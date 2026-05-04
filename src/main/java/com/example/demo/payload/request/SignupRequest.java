@@ -1,5 +1,8 @@
 package com.example.demo.payload.request;
 
+// PATRÓN DTO - DATA TRANSFER OBJECT:
+// Transporta los datos de registro desde el frontend sin exponer la entidad Usuario.
+// Valida username, email y contraseña según reglas definidas.
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
